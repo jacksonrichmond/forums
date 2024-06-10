@@ -2463,12 +2463,12 @@ function install_done()
 	$dh = opendir(INSTALL_ROOT."resources");
 	while(($file = readdir($dh)) !== false)
 	{
-		if(preg_match("#upgrade([0-9]+).php$#i", $file, $match))
+		if(preg_match("#upgrade(\d+(p\d+)*).php$#i", $file, $match))
 		{
 			$version_history[$match[1]] = $match[1];
 		}
 	}
-	sort($version_history, SORT_NUMERIC);
+	natsort($version_history);
 	$cache->update("version_history", $version_history);
 
 	// Schedule an update check so it occurs an hour ago.  Gotta stay up to date!
