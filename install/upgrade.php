@@ -287,7 +287,7 @@ else
 		$upgradescripts = array();
 		while(($file = readdir($dh)) !== false)
 		{
-			if(preg_match("#upgrade([0-9]+).php$#i", $file, $match))
+			if(preg_match("#upgrade(\d+(p\d+)*).php$#i", $file, $match))
 			{
 				$upgradescripts[$match[1]] = $file;
 				$key_order[] = $match[1];
@@ -303,12 +303,31 @@ else
 		// If array is empty then we must be upgrading to 1.6 since that's when this feature was added
 		if(empty($version_history))
 		{
-			$next_update_version = 17; // 16+1
+			$candidates = array(
+				17, // 16+1
+			);
 		}
 		else
 		{
-			$next_update_version = (int)(end($version_history)+1);
+			$latest_installed = end($version_history);
+
+			// Check for standard migrations and old branch patches (1 < 1p1 < 1p2 < 2)
+			$parts = explode('p', $latest_installed);
+
+			$candidates = array(
+				(string)((int)$parts[0] + 1),
+			);
+
+			if(isset($parts[1]))
+			{
+				$candidates[] = $parts[0].'p'.((int)$parts[1] + 1);
+			}
+			else
+			{
+				$candidates[] = $parts[0].'p1';
+			}
 		}
+
 
 		$vers = '';
 		foreach($key_order as $k => $key)
@@ -316,12 +335,14 @@ else
 			$file = $upgradescripts[$key];
 			$upgradescript = file_get_contents(INSTALL_ROOT."resources/$file");
 			preg_match("#Upgrade Script:(.*)#i", $upgradescript, $verinfo);
-			preg_match("#upgrade([0-9]+).php$#i", $file, $keynum);
+			preg_match("#upgrade(\d+(p\d+)*).php$#i", $file, $keynum);
 			if(trim($verinfo[1]))
 			{
-				if($keynum[1] == $next_update_version)
+				if(in_array($keynum[1], $candidates))
 				{
 					$vers .= "<option value=\"$keynum[1]\" selected=\"selected\">$verinfo[1]</option>\n";
+
+					$candidates = array();
 				}
 				else
 				{
@@ -345,28 +366,36 @@ else
 	}
 	elseif($mybb->input['action'] == "doupgrade")
 	{
+		if(ctype_alnum($mybb->get_input('from')))
+		{
+			$from = $mybb->get_input('from');
+		}
+		else{
+			$from = 0;
+		}
+
 		add_upgrade_store("allow_anonymous_info", $mybb->get_input('allow_anonymous_info', MyBB::INPUT_INT));
-		require_once INSTALL_ROOT."resources/upgrade".$mybb->get_input('from', MyBB::INPUT_INT).".php";
+		require_once INSTALL_ROOT."resources/upgrade".$from.".php";
 		if($db->table_exists("datacache") && !empty($upgrade_detail['requires_deactivated_plugins']) && $mybb->get_input('donewarning') != "true")
 		{
 			$plugins = $cache->read('plugins', true);
 			if(!empty($plugins['active']))
 			{
 				$output->print_header();
-				$lang->plugin_warning = "<input type=\"hidden\" name=\"from\" value=\"".$mybb->get_input('from', MyBB::INPUT_INT)."\" />\n<input type=\"hidden\" name=\"donewarning\" value=\"true\" />\n<div class=\"error\"><strong><span style=\"color: red\">Warning:</span></strong> <p>There are still ".count($plugins['active'])." plugin(s) active. Active plugins can sometimes cause problems during an upgrade procedure or may break your forum afterward. It is <strong>strongly</strong> reccommended that you deactivate your plugins before continuing.</p></div> <br />";
+				$lang->plugin_warning = "<input type=\"hidden\" name=\"from\" value=\"".$from."\" />\n<input type=\"hidden\" name=\"donewarning\" value=\"true\" />\n<div class=\"error\"><strong><span style=\"color: red\">Warning:</span></strong> <p>There are still ".count($plugins['active'])." plugin(s) active. Active plugins can sometimes cause problems during an upgrade procedure or may break your forum afterward. It is <strong>strongly</strong> reccommended that you deactivate your plugins before continuing.</p></div> <br />";
 				$output->print_contents($lang->sprintf($lang->plugin_warning, $mybb->version));
 				$output->print_footer("doupgrade");
 			}
 			else
 			{
-				add_upgrade_store("startscript", $mybb->get_input('from', MyBB::INPUT_INT));
-				$runfunction = next_function($mybb->get_input('from', MyBB::INPUT_INT));
+				add_upgrade_store("startscript", $from);
+				$runfunction = next_function($from);
 			}
 		}
 		else
 		{
-			add_upgrade_store("startscript", $mybb->get_input('from', MyBB::INPUT_INT));
-			$runfunction = next_function($mybb->get_input('from', MyBB::INPUT_INT));
+			add_upgrade_store("startscript", $from);
+			$runfunction = next_function($from);
 		}
 	}
 	$currentscript = get_upgrade_store("currentscript");
@@ -722,7 +751,7 @@ function whatsnext()
 /**
  * Determine the next function we need to call
  *
- * @param int $from
+ * @param string $from
  * @param string $func
  *
  * @return string
@@ -739,14 +768,37 @@ function next_function($from, $func="dbchanges")
 	else
 	{
  		// We're done with our last upgrade script, so add it to the upgrade scripts we've already completed.
+		if (ctype_digit($from)) {
+			$from = (int)$from;
+		}
+
 		$version_history = $cache->read("version_history");
 		$version_history[$from] = $from;
 		$cache->update("version_history", $version_history);
 
-		$from = $from+1;
-		if(file_exists(INSTALL_ROOT."resources/upgrade".$from.".php"))
+		// Check for standard migrations and old branch patches (1 < 1p1 < 1p2 < 2)
+		$parts = explode('p', $from);
+
+		$candidates = array(
+			(string)((int)$parts[0] + 1),
+		);
+
+		if(isset($parts[1]))
 		{
-			$function = next_function($from);
+			$candidates[] = $parts[0].'p'.((int)$parts[1] + 1);
+		}
+		else
+		{
+			$candidates[] = $parts[0].'p1';
+		}
+
+		foreach($candidates as $candidate)
+		{
+			if(file_exists(INSTALL_ROOT."resources/upgrade".$candidate.".php"))
+			{
+				$function = next_function($candidate);
+				break;
+			}
 		}
 	}
 
