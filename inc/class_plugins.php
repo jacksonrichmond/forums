@@ -126,7 +126,7 @@ class pluginSystem
 			{
 				foreach($hooks as $key => $hook)
 				{
-					if($hook['file'] ?? false)
+					if(!empty($hook['file']))
 					{
 						require_once $hook['file'];
 					}
