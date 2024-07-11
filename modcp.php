@@ -3398,17 +3398,16 @@ if($mybb->input['action'] == "finduser")
 
 		if($user['invisible'] == 1 && $mybb->usergroup['canviewwolinvis'] != 1 && $user['uid'] != $mybb->user['uid'])
 		{
-			$lastdate = $lang->lastvisit_never;
-
-			if($user['lastvisit'])
-			{
-				// We have had at least some active time, hide it instead
-				$lastdate = $lang->lastvisit_hidden;
-			}
+			// We have had at least some active time, hide it instead
+			$lastdate = $lang->lastvisit_hidden;
+		}
+		else if($user['lastvisit'])
+		{
+			$lastdate = my_date('relative', $user['lastvisit']);
 		}
 		else
 		{
-			$lastdate = my_date('relative', $user['lastvisit']);
+			$lastdate = $lang->lastvisit_never;
 		}
 
 		$usergroup = htmlspecialchars_uni($usergroups_cache[$user['usergroup']]['title']);
