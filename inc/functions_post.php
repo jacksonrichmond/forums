@@ -30,6 +30,7 @@ function build_postbit($post, $post_type=0)
 	{
 		$post['userusername'] = '';
 	}
+	
 	if(!isset($post['uid']))
 	{
 		$post['uid'] = 0;
