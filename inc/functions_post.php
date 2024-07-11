@@ -35,6 +35,7 @@ function build_postbit($post, $post_type=0)
 	{
 		$post['uid'] = 0;
 	}
+	
 	if(!isset($post['usergroup']))
 	{
 		$post['usergroup'] = 0;
