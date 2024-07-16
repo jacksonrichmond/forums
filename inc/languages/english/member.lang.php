@@ -64,7 +64,6 @@ $l['users_contact_details'] = "{1}'s Contact Details";
 $l['homepage'] = "Homepage:";
 $l['pm'] = "Private Message:";
 $l['send_pm'] = "Send {1} a private message.";
-$l['icq_number'] = "ICQ Number:";
 $l['skype_id'] = "Skype ID:";
 $l['google_id'] = "Google Hangouts ID:";
 $l['avatar']  = "Avatar:";

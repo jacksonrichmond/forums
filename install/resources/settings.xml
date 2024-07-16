@@ -2580,15 +2580,6 @@ delete=Delete]]></optionscode>
 		</setting>
 	</settinggroup>
 	<settinggroup name="contactdetails" title="Contact Details" description="This section allows you to change the settings of the contact fields feature." disporder="28" isdefault="1">
-		<setting name="allowicqfield">
-			<title>Allow ICQ Number Field To Usergroups</title>
-			<description><![CDATA[Select the usergroups which should be allowed to use the ICQ Number contact field.]]></description>
-			<disporder>1</disporder>
-			<optionscode><![CDATA[groupselect]]></optionscode>
-			<settingvalue><![CDATA[-1]]></settingvalue>
-			<isdefault>1</isdefault>
-			<helpkey></helpkey>
-		</setting>
 		<setting name="allowskypefield">
 			<title>Allow Skype ID Field To Usergroups</title>
 			<description><![CDATA[Select the usergroups which should be allowed to use the Skype ID contact field.]]></description>
