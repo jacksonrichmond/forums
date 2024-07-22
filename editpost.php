@@ -231,7 +231,7 @@ if($mybb->settings['enableattachments'] == 1 && ($mybb->get_input('newattachment
 			$usage = $db->fetch_array($query);
 			$ret['usage'] = get_friendly_size($usage['ausage']);
 		}
-		
+
 		header("Content-type: application/json; charset={$lang->settings['charset']}");
 		echo json_encode($ret);
 		exit();
@@ -603,6 +603,7 @@ if(!$mybb->input['action'] || $mybb->input['action'] == "editpost")
 	$plugins->run_hooks("editpost_action_start");
 
 	$preview = '';
+	$icon = '';
 	if(!isset($mybb->input['previewpost']))
 	{
 		$icon = $post['icon'];
@@ -617,7 +618,7 @@ if(!$mybb->input['action'] || $mybb->input['action'] == "editpost")
 	eval("\$loginbox = \"".$templates->get("changeuserbox")."\";");
 
 	$deletebox = '';
-	
+
 	if(isset($post['visible']) && $post['visible'] != -1 && (($thread['firstpost'] == $pid && (is_moderator($fid, "candeletethreads") || $forumpermissions['candeletethreads'] == 1 && $mybb->user['uid'] == $post['uid'])) || ($thread['firstpost'] != $pid && (is_moderator($fid, "candeleteposts") || $forumpermissions['candeleteposts'] == 1 && $mybb->user['uid'] == $post['uid']))))
 	{
 		eval("\$deletebox = \"".$templates->get("editpost_delete")."\";");
@@ -812,7 +813,7 @@ if(!$mybb->input['action'] || $mybb->input['action'] == "editpost")
 			{
 				$postoptionschecked['disablesmilies'] = " checked=\"checked\"";
 			}
-			
+
 			$subscription_method = get_subscription_method($tid, $postoptions);
 			${$subscription_method.'subscribe'} = "checked=\"checked\" ";
 		}
@@ -918,17 +919,17 @@ if(!$mybb->input['action'] || $mybb->input['action'] == "editpost")
 		$lang->max_options = $lang->sprintf($lang->max_options, $mybb->settings['maxpolloptions']);
 		$numpolloptions = $mybb->get_input('numpolloptions', MyBB::INPUT_INT);
 		$postpollchecked = '';
-		
+
 		if($numpolloptions < 1)
 		{
 			$numpolloptions = 2;
 		}
-		
+
 		if($mybb->get_input('postpoll', MyBB::INPUT_INT) == 1)
 		{
 			$postpollchecked = 'checked="checked"';
 		}
-		
+
 		eval("\$pollbox = \"".$templates->get("newthread_postpoll")."\";");
 	}
 	else
