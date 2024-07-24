@@ -603,11 +603,6 @@ if(!$mybb->input['action'] || $mybb->input['action'] == "editpost")
 	$plugins->run_hooks("editpost_action_start");
 
 	$preview = '';
-	$icon = '';
-	if(!isset($mybb->input['previewpost']))
-	{
-		$icon = $post['icon'];
-	}
 
 	if($forum['allowpicons'] != 0)
 	{
@@ -855,7 +850,7 @@ if(!$mybb->input['action'] || $mybb->input['action'] == "editpost")
 		// Set the values of the post info array.
 		$postinfo['message'] = $previewmessage;
 		$postinfo['subject'] = $previewsubject;
-		$postinfo['icon'] = $icon;
+		$postinfo['icon'] = $post['icon'];
 		$postinfo['smilieoff'] = $postoptions['disablesmilies'];
 
 		$postbit = build_postbit($postinfo, 1);
